@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/trick/wt.png">
 <meta property="article:published_time" content="2024-12-23T15:52:26.916Z">
-<meta property="article:modified_time" content="2024-12-24T17:21:12.210Z">
+<meta property="article:modified_time" content="2024-12-26T17:59:22.707Z">
 <meta property="article:author" content="Xci77">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/trick/wt.png">
@@ -67,7 +67,7 @@
 <div class="widgets">
 
 
-<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">Recent Update</span></div><div class="widget-body fs14"><a class="item title" href="/2024/12/27/cpp/"><span class="title">C++疏漏记录</span></a><a class="item title" href="/2024/12/21/leetcode/"><span class="title">LeetCode刷题记录</span></a><a class="item title" href="/2024/12/23/trick/"><span class="title">My Trick on Windows & Linux</span></a><a class="item title" href="/2024/12/21/hello-world/"><span class="title">Hello World</span></a></div></widget>
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">Recent Update</span></div><div class="widget-body fs14"><a class="item title" href="/2024/12/21/leetcode/"><span class="title">LeetCode刷题记录</span></a><a class="item title" href="/2024/12/23/trick/"><span class="title">My Trick on Windows & Linux</span></a><a class="item title" href="/2024/12/27/cpp/"><span class="title">C++疏漏记录</span></a><a class="item title" href="/2024/12/21/hello-world/"><span class="title">Hello World</span></a></div></widget>
 </div>
 
 </div></aside><div class="l_main" id="main">
@@ -80,7 +80,7 @@
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
 <span class="sep"></span><a class="cap breadcrumb" href="/">Blog</a></div>
-<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2024-12-23T15:52:26.916Z">2024-12-23</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2024-12-24T17:21:12.210Z">2024-12-25</time></span></div></div></div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2024-12-23T15:52:26.916Z">2024-12-23</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2024-12-26T17:59:22.707Z">2024-12-27</time></span></div></div></div>
     
     <div class="bottom only-title">
       
@@ -111,7 +111,20 @@
 </ul>
 <h4 id="最后一步"><a href="#最后一步" class="headerlink" title="最后一步"></a>最后一步</h4><p>将配置文件放置到C:\Users\{user_name}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup中，即可开机自启，大功告成！</p>
 <hr>
-<h2 id="gcc-clang-安装"><a href="#gcc-clang-安装" class="headerlink" title="gcc &amp; clang 安装"></a>gcc &amp; clang 安装</h2><p>很</p>
+<h2 id="gcc-clang-安装"><a href="#gcc-clang-安装" class="headerlink" title="gcc &amp; clang 安装"></a>gcc &amp; clang 安装</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -Q  查看安装了哪些包</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -S &#123;package name&#125;  安装指定的包</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -Ss 列出所有可用的包（包括未安装的）</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -Qi &#123;package_name&#125; 查看某个包的详细信息</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -Syu 更新包管理器</span><br></pre></td></tr></table></figure>
+
+<p>本人用mysy2构建了全套的C++编译工具，包括clang、clangd、gcc、make、cmake。爽歪歪。<br>本条命令用来安装clangd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -S mingw-w64-ucrt-x86_64-clang-tools-extra</span><br></pre></td></tr></table></figure>
+
+<p>搭配clang插件，vscode写C++的体验感再一次提升了。clion请直接退休好吗。值得一提的，哥们曾在wsl也搞过clangd，但是启动后的几秒就会直接崩掉，且没有找到解决办法。也许是分配给wsl的内存太少了？不过现在在windows下的体验还是非常的顶呱呱的。嘻。</p>
 
 <div class="article-footer fs14">
     <section id="license">
