@@ -17,18 +17,18 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
   
-  <title>Git常用操作的查漏补缺 - EurekaFlash</title>
+  <title>VSCode is all you need - EurekaFlash</title>
 
   
-    <meta name="description" content="Git也用了很久很久了，但是还是很多命令用的不熟悉，准备查漏补缺下。 分支切换git checkout切换到新分支： git checkout -b xxx切换到分支： git checkout xxx 不同的是，git checkout 还可以用于撤销文件的修改 git checkout -- &lt;file&gt;，可以撤销目前相对于暂存区的修改 这个–用于说明，后面跟着的不是commit">
+    <meta name="description" content="常言道：“工欲善其事，必先利其器。” 2025 年，我们几乎可以用 VSCode 完成计算机世界所有的事情。那么，当这款编辑器已经成为开发者指尖的 “瑞士军刀”，从代码编写到文档协作，从远程开发到 AI 辅助开发，它的每一个快捷键、每一项隐藏功能，都可能成为效率跃升的关键。与其在重复操作中消耗精力，不如静下心来解锁这些 “隐藏技能”  毕竟，让工具适配思维，而非让思维迁就工具。 —— 豆包  快捷">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Git常用操作的查漏补缺">
-<meta property="og:url" content="http://example.com/2025/03/10/git/index.html">
+<meta property="og:title" content="VSCode is all you need">
+<meta property="og:url" content="http://example.com/2025/07/13/vscode1/index.html">
 <meta property="og:site_name" content="EurekaFlash">
-<meta property="og:description" content="Git也用了很久很久了，但是还是很多命令用的不熟悉，准备查漏补缺下。 分支切换git checkout切换到新分支： git checkout -b xxx切换到分支： git checkout xxx 不同的是，git checkout 还可以用于撤销文件的修改 git checkout -- &lt;file&gt;，可以撤销目前相对于暂存区的修改 这个–用于说明，后面跟着的不是commit">
+<meta property="og:description" content="常言道：“工欲善其事，必先利其器。” 2025 年，我们几乎可以用 VSCode 完成计算机世界所有的事情。那么，当这款编辑器已经成为开发者指尖的 “瑞士军刀”，从代码编写到文档协作，从远程开发到 AI 辅助开发，它的每一个快捷键、每一项隐藏功能，都可能成为效率跃升的关键。与其在重复操作中消耗精力，不如静下心来解锁这些 “隐藏技能”  毕竟，让工具适配思维，而非让思维迁就工具。 —— 豆包  快捷">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2025-03-09T16:19:27.191Z">
-<meta property="article:modified_time" content="2025-03-26T17:35:17.289Z">
+<meta property="article:published_time" content="2025-07-12T18:38:31.740Z">
+<meta property="article:modified_time" content="2025-07-13T17:44:43.844Z">
 <meta property="article:author" content="Xci77">
 <meta name="twitter:card" content="summary">
   
@@ -78,31 +78,111 @@
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
 <span class="sep"></span><a class="cap breadcrumb" href="/">Blog</a></div>
-<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-03-09T16:19:27.191Z">2025-03-10</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-03-26T17:35:17.289Z">2025-03-27</time></span></div></div></div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-07-12T18:38:31.740Z">2025-07-13</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-07-13T17:44:43.844Z">2025-07-14</time></span></div></div></div>
     
     <div class="bottom only-title">
       
       <div class="text-area">
-        <h1 class="text title"><span>Git常用操作的查漏补缺</span></h1>
+        <h1 class="text title"><span>VSCode is all you need</span></h1>
         
       </div>
     </div>
     
   </div>
-  </div><article class="md-text content"><p>Git也用了很久很久了，但是还是很多命令用的不熟悉，准备查漏补缺下。</p>
-<h3 id="分支切换"><a href="#分支切换" class="headerlink" title="分支切换"></a>分支切换</h3><h4 id="git-checkout"><a href="#git-checkout" class="headerlink" title="git checkout"></a>git checkout</h4><p>切换到新分支： <code>git checkout -b xxx</code><br>切换到分支： <code>git checkout xxx</code></p>
-<p>不同的是，git checkout 还可以用于撤销文件的修改</p>
-<p><code>git checkout -- &lt;file&gt;</code>，可以撤销目前<strong>相对于暂存区</strong>的修改</p>
-<p>这个–用于说明，后面跟着的不是commit id，而是文件名</p>
-<p>如果要撤销暂存区的修改到工作区，就要写 <code>git reset HEAD &lt;file&gt;</code>。如果不加<code>&lt;file&gt;</code>就是暂存区的全部文件都撤销</p>
-<h4 id="git-switch"><a href="#git-switch" class="headerlink" title="git switch"></a>git switch</h4><p>git switch在后面的新版本提供了新的切换分支的命令，更加纯粹的命令<br>切换到新分支： <code>git switch -c xxx</code><br>切换到分支： <code>git switch xxx</code></p>
-<h3 id="不知道是啥"><a href="#不知道是啥" class="headerlink" title="不知道是啥"></a>不知道是啥</h3><h4 id="git-status"><a href="#git-status" class="headerlink" title="git status"></a>git status</h4><p>显示目前工作区的一个状态，当你进行了修改，但没有add的时候</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line">        modified:   README.md</span><br><span class="line"></span><br><span class="line">no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</span><br></pre></td></tr></table></figure>
+  </div><article class="md-text content"><p>常言道：“工欲善其事，必先利其器。” 2025 年，我们几乎可以用 VSCode 完成计算机世界所有的事情。那么，当这款编辑器已经成为开发者指尖的 “瑞士军刀”，从代码编写到文档协作，从远程开发到 AI 辅助开发，它的每一个快捷键、每一项隐藏功能，都可能成为效率跃升的关键。与其在重复操作中消耗精力，不如静下心来解锁这些 “隐藏技能”</p>
+<blockquote>
+<p>毕竟，让工具适配思维，而非让思维迁就工具。 —— 豆包</p>
+</blockquote>
+<h2 id="快捷键篇"><a href="#快捷键篇" class="headerlink" title="快捷键篇"></a>快捷键篇</h2><p>在使用 VSCode 快捷键时，核心的理念就是尽可能地减少鼠标的使用，用键盘完成大部分的工作。当你熟练掌握了那些实用的快捷键后，你会惊喜地发现，原来编码可以如此流畅和高效，这种感觉简直 “泰裤辣”！</p>
+<h3 id="找你想要的一切"><a href="#找你想要的一切" class="headerlink" title="找你想要的一切"></a>找你想要的一切</h3><p>在一个大型项目中，我们常常需要快速定位到特定的文件、行数或者符号。VSCode 为我们提供了一系列便捷的快捷键，就像是给我们配备了一个精准的导航系统，让我们能够迅速找到我们想要的一切。</p>
+<ul>
+<li>Ctrl + P, 导航到你想要的任意文件</li>
+<li>Ctrl + G, 跳到指定的行数</li>
+<li>Ctrl + Shift + O, 导航到你想要的Symbol </li>
+<li>Ctrl + Tab, 循环浏览近期打开的文件</li>
+<li>Alt + Left&#x2F;Right，可以快速在最近光标位置进行跳转，支持文件内和文件间</li>
+<li>Ctrl + P, ?, 可以展示有哪些命令可以用。上面展示的内容，都在里面</li>
+<li>Ctrl + R, 循环浏览近期打开的项目</li>
+<li>Ctrl + Shift + P, 打开命令面板，你将打开哆啦A梦的工具箱</li>
+<li>Ctrl + T，导航到全局的近期的Symbol</li>
+</ul>
+<h3 id="多group编辑"><a href="#多group编辑" class="headerlink" title="多group编辑"></a>多group编辑</h3><p>在实际的开发过程中，我们常常需要同时编辑多个文件或者查看不同的代码片段。多个 group 的编辑模式就像是给我们提供了多个工作台，让我们能够左右开弓，同时处理多个任务。</p>
+<ul>
+<li><p>Ctrl + Num, 切换Group, 索引从1开始</p>
+</li>
+<li><p>Alt + Num，切换Group内的文件，索引从1开始</p>
+</li>
+<li><p>Ctrl + PageDown&#x2F;PageUp, 左右切换editor，可以跨越不同的group</p>
+</li>
+<li><p>Ctrl + F4, 关闭当前正在的editor</p>
+</li>
+<li><p>Ctrl + K, W, 关闭当前的group</p>
+</li>
+<li><p>Ctrl + K, Ctrl + W, 干掉所有的group的所有editor</p>
+</li>
+</ul>
+<h3 id="快捷键文本操作"><a href="#快捷键文本操作" class="headerlink" title="快捷键文本操作"></a>快捷键文本操作</h3><p>在编码过程中，我们会进行大量的文本操作，如移动行、复制行、选中单词、删除行等。合理运用 VSCode 的快捷键进行文本操作，可以让我们避免很多琐碎的鼠标操作，大大提高我们的编码效率。</p>
+<ul>
+<li><p>Alt + Up&#x2F;Down，上下移动行</p>
+</li>
+<li><p>Shift + Alt + Up&#x2F;Down，上下复制行</p>
+</li>
+<li><p>Ctrl + L，选中整行</p>
+</li>
+<li><p>Ctrl + Shift + K, 快速删除选中的行</p>
+</li>
+<li><p>Ctrl + D，快速选中下一个同样的单词</p>
+</li>
+<li><p>Ctrl + Shift + L，快速选中所有同样的单词，并且光标置于末尾。以上两种都会可选Match Case &amp;&amp; Match Whole Word模式，让匹配更加精准</p>
+</li>
+<li><p>F2重命名。批量选中如果是为了变量改名的话，不妨试试F2重命名</p>
+</li>
+</ul>
+<h3 id="光标操作"><a href="#光标操作" class="headerlink" title="光标操作"></a>光标操作</h3><p>光标是我们在编辑代码时的重要工具，合理运用 VSCode 的光标操作快捷键，可以让我们更加灵活地控制光标，提高我们的编辑效率。</p>
+<ul>
+<li><p>Home&#x2F;End, 快速切到行头行尾</p>
+</li>
+<li><p>Ctrl + Home&#x2F;End, 快速切到文件头尾巴</p>
+</li>
+<li></li>
+<li><p>Ctrl + Left&#x2F;Right，以单词为间隔移动光标</p>
+</li>
+<li><p>Ctrl + Delete, 以单词为目标删除</p>
+</li>
+<li><p>Alt + Click，多选光标到你想要的位置</p>
+</li>
+<li><p>Ctrl + Alt + Up&#x2F;Down，每一行都添加光标</p>
+</li>
+<li><p>Shift + Alt + Click Drag，每一行都添加光标</p>
+</li>
+</ul>
+<h3 id="奇奇怪怪的快捷键"><a href="#奇奇怪怪的快捷键" class="headerlink" title="奇奇怪怪的快捷键"></a>奇奇怪怪的快捷键</h3><p>除了以上这些常见的快捷键，VSCode 还有一些说不清具体分类， 但却非常实用的快捷键。</p>
+<ul>
+<li><p>Ctrl + Up&#x2F;Down，就是滚动，不改变光标位置</p>
+</li>
+<li><p>Alt + 滚轮, 就是邦快的滚动</p>
+</li>
+<li><p>Ctrl + [ &#x2F; ] 缩进代码</p>
+</li>
+<li><p>Ctrl + shift + [ &#x2F; ] 折叠打开代码</p>
+</li>
+<li><p>Ctrl + U， 撤回最近一次光标操作</p>
+</li>
+</ul>
+<p>上面介绍的当然不是全部好用的快捷键了，只不过是我在日常使用中常用的一些。你可以根据自己的使用习惯和需求，不断探索和发现更多实用的快捷键，让 VSCode 成为你最得力的编码助手。</p>
+<p>当然大家有想补充的也完全欢迎在评论区补充~</p>
+<h2 id="VsCode实用功能"><a href="#VsCode实用功能" class="headerlink" title="VsCode实用功能"></a>VsCode实用功能</h2><p>VSCode 不仅拥有丰富的快捷键，还有一些实用功能，这些功能就像是隐藏在深海中的宝藏，虽然藏得很深，但一旦被我们发现，就能为我们的开发工作带来巨大的便利。</p>
+<h3 id="OutLine"><a href="#OutLine" class="headerlink" title="OutLine"></a>OutLine</h3><p>在 VSCode 中，OutLine 是一个非常实用的功能。一般来讲，我喜欢把它拖到右边，和 minimap 搭配使用。这样一来，它就像是一个清晰的地图，能够帮助我们很好地在代码中进行跳转。通过 OutLine，我们可以快速查看文件的结构，找到我们需要的函数、类或者代码块，提高我们的查找效率。</p>
+<h3 id="TimeLine"><a href="#TimeLine" class="headerlink" title="TimeLine"></a>TimeLine</h3><p>TimeLine 功能包含了两个维度的内容，一个是本地对文件历次的修改，另一个是 git 每次提交对文件的修改。这就像是一个时间机器，让我们能够回顾文件的历史变迁。</p>
+<p>问题来了，当你不小心误删了一个文件，甚至是使用了 rm -rf 这种彻底删除的命令，你怎么把它找回来呢？TimeLine 功能或许可以帮助你找到答案。通过查看文件的历史记录，你有可能恢复到误删之前的版本。</p>
+<h3 id="文件比较"><a href="#文件比较" class="headerlink" title="文件比较"></a>文件比较</h3><p>在开发过程中，我们经常需要比较两个文件的差异。VSCode 为我们提供了多种文件比较的方式。</p>
+<ul>
+<li>Ctrl 多选两个文件右键Compared Selected。它会清晰地显示出两个文件之间的差异，让你能够快速定位到修改的地方。</li>
+<li>点击一个文右键择Select for Compare，点击第二个文件右键选择Compared With Selected：这种方式适用于你想要更加灵活地选择比较的文件。先选择一个文件作为基准，然后再选择另一个文件进行比较，同样可以清晰地看到两个文件的差异。</li>
+</ul>
+<p>不过上面两种方式都局限于必须在同一个 workspace 才能进行比较。那有没有比较非同 workspace 文件的方法呢？毕竟这种场景绝非少数。<br>有的兄弟，有的。我们可以使用命令行 <code>code --diff &lt;file path1&gt; &lt;file path2&gt;</code> 来比较不同 workspace 的文件。</p>
+<p>这就为我们提供了更多的比较选择，让我们能够更加全面地查看文件的差异。</p>
 
-<p>当你进行了add的时候</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Changes to be committed:</span><br><span class="line">  (use &quot;git restore --staged &lt;file&gt;...&quot; to unstage)</span><br><span class="line">        modified:   README.md</span><br></pre></td></tr></table></figure>
-
-<h3 id="sparse-checkout"><a href="#sparse-checkout" class="headerlink" title="sparse-checkout"></a>sparse-checkout</h3><h3 id="git-lfs"><a href="#git-lfs" class="headerlink" title="git-lfs"></a>git-lfs</h3>
 <div class="article-footer fs14">
     <section id="license">
       <div class="header"><span>License</span></div>
@@ -111,7 +191,7 @@
     </section>
     </div>
 </article>
-<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">Newer</div><a href="/2025/03/11/thread/">C++多线程的学习</a></div><div class="item" id="next"><div class="note">Older</div><a href="/2024/12/27/cpp/">C++疏漏记录</a></div></section></div>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">Older</div><a href="/2025/05/18/fiber0/">协程0</a></div></section></div>
 
 
 
@@ -125,7 +205,7 @@
 
 
 
-<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E5%88%87%E6%8D%A2"><span class="toc-text">分支切换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#git-checkout"><span class="toc-text">git checkout</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#git-switch"><span class="toc-text">git switch</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E7%9F%A5%E9%81%93%E6%98%AF%E5%95%A5"><span class="toc-text">不知道是啥</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#git-status"><span class="toc-text">git status</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sparse-checkout"><span class="toc-text">sparse-checkout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#git-lfs"><span class="toc-text">git-lfs</span></a></li></ol></div><div class="widget-footer">
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E9%94%AE%E7%AF%87"><span class="toc-text">快捷键篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%BE%E4%BD%A0%E6%83%B3%E8%A6%81%E7%9A%84%E4%B8%80%E5%88%87"><span class="toc-text">找你想要的一切</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9Agroup%E7%BC%96%E8%BE%91"><span class="toc-text">多group编辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%96%87%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text">快捷键文本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%89%E6%A0%87%E6%93%8D%E4%BD%9C"><span class="toc-text">光标操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A5%87%E5%A5%87%E6%80%AA%E6%80%AA%E7%9A%84%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-text">奇奇怪怪的快捷键</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VsCode%E5%AE%9E%E7%94%A8%E5%8A%9F%E8%83%BD"><span class="toc-text">VsCode实用功能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OutLine"><span class="toc-text">OutLine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TimeLine"><span class="toc-text">TimeLine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%AF%94%E8%BE%83"><span class="toc-text">文件比较</span></a></li></ol></li></ol></div><div class="widget-footer">
 
 <a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>Scroll to Top</span></a></div></widget>
 </div></aside><div class='float-panel blur'>
