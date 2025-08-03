@@ -1,0 +1,742 @@
+
+<!DOCTYPE html><html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>1024方阵转置与底层cache原理 - EurekaFlash</title>
+
+  
+    <meta name="description" content="进行矩阵的测试的时候，会发现一个神奇的现象。1024x1024方阵的原地转置，竟然比1025x1025方阵转置更慢！这其实是一个比较反直觉的现象，其底层原理和cache是密不可分的。下面从理论和实践上分析了产生这一现象的深层次原因。 现象进行矩阵的测试的时候，会发现一个神奇的现象。$10241024$ 方阵的原地转置，竟然比$10251025$方阵转置更慢！ 当然，这里有一个非常重要的前提条件是，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1024方阵转置与底层cache原理">
+<meta property="og:url" content="http://example.com/2025/07/22/matrix/index.html">
+<meta property="og:site_name" content="EurekaFlash">
+<meta property="og:description" content="进行矩阵的测试的时候，会发现一个神奇的现象。1024x1024方阵的原地转置，竟然比1025x1025方阵转置更慢！这其实是一个比较反直觉的现象，其底层原理和cache是密不可分的。下面从理论和实践上分析了产生这一现象的深层次原因。 现象进行矩阵的测试的时候，会发现一个神奇的现象。$10241024$ 方阵的原地转置，竟然比$10251025$方阵转置更慢！ 当然，这里有一个非常重要的前提条件是，">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/matrix/csapp_cache.png">
+<meta property="article:published_time" content="2025-07-21T16:05:34.717Z">
+<meta property="article:modified_time" content="2025-08-03T14:07:42.113Z">
+<meta property="article:author" content="Xci77">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/matrix/csapp_cache.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/images/icon.jpg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/icon.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">EurekaFlash</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="Search"></form><div id="search-result"></div><div class="search-no-result">No Results!</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">Recent Update</span></div><div class="widget-body fs14"><a class="item title" href="/2025/07/22/matrix/"><span class="title">1024方阵转置与底层cache原理</span></a><a class="item title" href="/2025/07/13/vscode1/"><span class="title">VSCode is all you need</span></a><a class="item title" href="/2025/05/18/fiber0/"><span class="title">协程0</span></a><a class="item title" href="/2025/03/21/bash/"><span class="title">Linux命令行学习</span></a><a class="item title" href="/2025/04/23/memory_leak/"><span class="title">内存泄漏</span></a><a class="item title" href="/2025/04/12/sort/"><span class="title">十大排序</span></a><a class="item title" href="/2025/03/11/python/"><span class="title">python高级用法</span></a><a class="item title" href="/2025/03/30/stack/"><span class="title">函数栈帧</span></a><a class="item title" href="/2025/03/10/git/"><span class="title">Git常用操作的查漏补缺</span></a><a class="item title" href="/2024/12/27/cpp/"><span class="title">C++疏漏记录</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/EurekaFlash" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/github.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Blog</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-07-21T16:05:34.717Z">2025-07-22</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-08-03T14:07:42.113Z">2025-08-03</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>1024方阵转置与底层cache原理</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>进行矩阵的测试的时候，会发现一个神奇的现象。1024x1024方阵的原地转置，竟然比1025x1025方阵转置更慢！这其实是一个比较反直觉的现象，其底层原理和cache是密不可分的。下面从理论和实践上分析了产生这一现象的深层次原因。</p>
+<h1 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h1><p>进行矩阵的测试的时候，会发现一个神奇的现象。$1024<em>1024$ 方阵的原地转置，竟然比$1025</em>1025$方阵转置更慢！</p>
+<p>当然，这里有一个非常重要的前提条件是，矩阵的元素在空间中连续！也就是，一维数组表示二维矩阵。如果是不连续的话，是没有这种现象的。</p>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><p>这里给出我进行测试的代码</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">int</span> m_;</span><br><span class="line">    <span class="type">int</span> n_;</span><br><span class="line">    std::vector&lt;<span class="type">int</span>&gt; arr_;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">Matrix</span>(<span class="type">int</span> i, <span class="type">int</span> j) : <span class="built_in">m_</span>(i), <span class="built_in">n_</span>(j) &#123;</span><br><span class="line">        <span class="comment">// 只允许方阵</span></span><br><span class="line">        <span class="built_in">assert</span>(m_ == n_);</span><br><span class="line">        arr_.<span class="built_in">resize</span>(m_ * n_);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">transpose</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">auto</span> get_index = [<span class="keyword">this</span>](<span class="type">int</span> i, <span class="type">int</span> j) &#123;</span><br><span class="line">            <span class="keyword">return</span> i * m_ + j;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; m_; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = i; j &lt; n_; j++) &#123;</span><br><span class="line">                std::<span class="built_in">swap</span>(arr_[<span class="built_in">get_index</span>(i, j)], arr_[<span class="built_in">get_index</span>(j, i)]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cassert&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;matrix.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">    <span class="built_in">assert</span>(argc &gt;= <span class="number">2</span>);</span><br><span class="line">    <span class="type">int</span> size = std::<span class="built_in">stoi</span>(argv[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t0 = std::chrono::steady_clock::<span class="built_in">now</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">volatile</span> <span class="type">long</span> <span class="type">long</span> s = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1&#x27;000</span>; ++i) &#123;</span><br><span class="line">        <span class="built_in">Matrix</span>(size, size).<span class="built_in">transpose</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> t1 = std::chrono::steady_clock::<span class="built_in">now</span>();</span><br><span class="line">    <span class="keyword">auto</span> ms = std::chrono::<span class="built_in">duration_cast</span>&lt;std::chrono::milliseconds&gt;(t1 - t0).<span class="built_in">count</span>();</span><br><span class="line">    <span class="keyword">auto</span> us = std::chrono::<span class="built_in">duration_cast</span>&lt;std::chrono::microseconds&gt;(t1 - t0).<span class="built_in">count</span>();</span><br><span class="line">    <span class="keyword">auto</span> ns = std::chrono::<span class="built_in">duration_cast</span>&lt;std::chrono::nanoseconds&gt;(t1 - t0).<span class="built_in">count</span>();</span><br><span class="line"></span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;耗时 &quot;</span> &lt;&lt; ms &lt;&lt; <span class="string">&quot; ms \n&quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>当然也可以使用benchmark。但是benchmark给出的1024和1025的大小关系并不明显。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;benchmark/benchmark.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;matrix.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">transpose_1024</span><span class="params">(benchmark::State&amp; state)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> _ : state) &#123;</span><br><span class="line">        <span class="built_in">Matrix</span>(<span class="number">1024</span>, <span class="number">1024</span>).<span class="built_in">transpose</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">BENCHMARK</span>(transpose_1024);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">transpose_1025</span><span class="params">(benchmark::State&amp; state)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> _ : state) &#123;</span><br><span class="line">        <span class="built_in">Matrix</span>(<span class="number">1025</span>, <span class="number">1025</span>).<span class="built_in">transpose</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">BENCHMARK</span>(transpose_1025);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">transpose_2048</span><span class="params">(benchmark::State&amp; state)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> _ : state) &#123;</span><br><span class="line">        <span class="built_in">Matrix</span>(<span class="number">2048</span>, <span class="number">2048</span>).<span class="built_in">transpose</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">BENCHMARK</span>(transpose_2048);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">transpose_2049</span><span class="params">(benchmark::State&amp; state)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> _ : state) &#123;</span><br><span class="line">        <span class="built_in">Matrix</span>(<span class="number">2049</span>, <span class="number">2049</span>).<span class="built_in">transpose</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">BENCHMARK</span>(transpose_2049);</span><br><span class="line"></span><br><span class="line"><span class="built_in">BENCHMARK_MAIN</span>();</span><br></pre></td></tr></table></figure>
+
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>很明显，这个性能差异与算法无关。代码一致，差异只能来自于cache上了。</p>
+<h2 id="查看cache信息"><a href="#查看cache信息" class="headerlink" title="查看cache信息"></a>查看cache信息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /sys/devices/system/cpu/cpu0/cache/index0/&#123;level,type,size,coherency_line_size,ways_of_associativity&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我的输出是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">Data</span><br><span class="line">48K</span><br><span class="line">64</span><br><span class="line">12</span><br></pre></td></tr></table></figure>
+
+<p>这个含义是：</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>总容量</th>
+<th>cache line</th>
+<th>路数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1 Data</td>
+<td>48KB</td>
+<td>64Byte</td>
+<td>12路组相连</td>
+</tr>
+</tbody></table>
+<p>那总的组数也很容易计算了：<br>$48 * 1024 &#x2F; (64 * 12) &#x3D; 64$组</p>
+<p>根据计组的知识，可以清楚的发现，内存地址的后6位，作为了块内的索引。<br>后6-12位，做了组的索引。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">31                  12 11    6 5     0</span><br><span class="line">+---------------------+--------+-------+</span><br><span class="line">|        Tag          | Index (6b)| Offset (6b)|</span><br><span class="line">+---------------------+--------+-------+</span><br></pre></td></tr></table></figure>
+
+<p>同理，可以获取L2的大小信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"> cat /sys/devices/system/cpu/cpu0/cache/index2/&#123;level,type,size,coherency_line_size,ways_of_associativity&#125;</span><br><span class="line">2</span><br><span class="line">Unified</span><br><span class="line">2048K</span><br><span class="line">64</span><br><span class="line">16</span><br></pre></td></tr></table></figure>
+
+<p>这个含义是：</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>总容量</th>
+<th>cache line</th>
+<th>路数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L2</td>
+<td>2048KB</td>
+<td>64Byte</td>
+<td>16路组相连</td>
+</tr>
+</tbody></table>
+<p>那总的组数也很容易计算了：<br>$2048 * 1024 &#x2F; (64 * 16) &#x3D; 2048$组</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">31                  17 16    6 5     0</span><br><span class="line">+---------------------+--------+-------+</span><br><span class="line">|        Tag         | Index (11b)| Offset (6b)|</span><br><span class="line">+---------------------+--------+-------+</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/matrix/csapp_cache.png" alt="csapp"></p>
+<p>这里是csapp里的cache示意图。如果不了解cache的原理的话，就回头去温习下。这里不做更多的讲解了。</p>
+<p>只需要记住：对于我的L1 cache来讲：</p>
+<ul>
+<li>内存地址的倒数11-6位的大小，就是被分为到了cache的第几个个组。</li>
+<li>每个组有12路，当12路都被占用后，组里再来一个新的，就需要挑一个旧的cache line给扔掉。</li>
+</ul>
+<p>对于我的L2 cache来讲：</p>
+<ul>
+<li>内存地址的倒数16-6位的大小，就是被分为到了cache的第几个个组。</li>
+<li>每个组有16路，当16路都被占用后，组里再来一个新的，就需要挑一个旧的cache line给扔掉。</li>
+</ul>
+<p>在思考原因的过程中，一开始，我的思路也是一直在L1 cache，怎么都想不明白，为什么会有性能上的差异。</p>
+<p>当思路来到L2 cache之后，情况就不一样了。</p>
+<p>介绍完了前面的基础知识，那就可以分析原因了</p>
+<h2 id="具体分析"><a href="#具体分析" class="headerlink" title="具体分析"></a>具体分析</h2><h3 id="1024矩阵在L1-cache的表现"><a href="#1024矩阵在L1-cache的表现" class="headerlink" title="1024矩阵在L1 cache的表现"></a>1024矩阵在L1 cache的表现</h3><p>首先，我们分析$1024 * 1024$矩阵，matrix[0][0] 和 matrix[1][0]，在内存上差了多少个字节。<br>以代码中的int, 4字节为例：<br>$1024 * 4 &#x3D; 4096 byte &#x3D; 2 ^ 12 byte$</p>
+<p>所以，假设a[0][0]的内存地址是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0  ‘ 000000’ 000000‘</span><br><span class="line">tag   set     offset</span><br></pre></td></tr></table></figure>
+
+<p>那么，a[1][0]的内存地址是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1  ‘ 000000’ 000000‘</span><br><span class="line">tag   set     offset</span><br></pre></td></tr></table></figure>
+
+<p>那么，a[2][0]的内存地址是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2  ‘ 000000’ 000000‘</span><br><span class="line">tag   set     offset</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，他们都落在了第0组里面。</p>
+<p>但这样子分析还是有点麻烦了。可以有一个相对更简化些的分析方法。我们可以写出这样一个公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(i, j) = ((1024 * i + j) * 4 ) &gt;&gt; 6 % 64</span><br><span class="line">                  切换成byte    `&gt;&gt;6移除掉块内索引` %64取出后6位，即在哪个set  </span><br></pre></td></tr></table></figure>
+<p>所以很容易得知</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">set(0,0) = 0</span><br><span class="line">set(1,0) = 0</span><br><span class="line">set(2,0) = 0</span><br><span class="line">set(3,0) = 0</span><br><span class="line">......</span><br><span class="line">set(1023,0) = 0</span><br></pre></td></tr></table></figure>
+<p>可见，真是酣畅淋漓的冲突。可以说，按照cache的分组的方式，每一行的第一个元素，都分在了同一个set里！按照我们12路组相连的L1 cache，访问a[12][0]，发现组里的每一路都被占了，就会驱逐其中一个。</p>
+<p>我们的矩阵转置的过程中，是按照上三角矩阵来转置的，计算流程是这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">转置第一行</span><br><span class="line">a[0][1] &lt;-&gt; a[1][0]</span><br><span class="line">a[0][2] &lt;-&gt; a[2][0]</span><br><span class="line">a[0][3] &lt;-&gt; a[3][0]</span><br><span class="line">········</span><br><span class="line">a[0][1022] &lt;-&gt; a[1022][0]</span><br><span class="line">a[0][1023] &lt;-&gt; a[1023][0]</span><br><span class="line">转置完第一行后，此时，第0组的cache，被塞满了a[1012][0] - a[1023][0]所在的cache line</span><br><span class="line"></span><br><span class="line">转置第二行</span><br><span class="line">a[1][2] &lt;-&gt; a[2][1]</span><br><span class="line">----note: 此时，a[2][1]和a[2][0]在同一cache line中，但此时已经被替换出去。miss</span><br><span class="line">a[1][3] &lt;-&gt; a[3][1]</span><br><span class="line">----note: 此时，a[3][1]和a[3][0]在同一cache line中，但此时已经被替换出去。miss</span><br><span class="line">a[1][4] &lt;-&gt; a[4][1]</span><br><span class="line">········</span><br><span class="line">----note: 此时，a[1012][0]和a[1023][0]所在的cache line，又被替换出去了。</span><br><span class="line"></span><br><span class="line">a[1][1022] &lt;-&gt; a[1022][1]</span><br><span class="line">a[1][1023] &lt;-&gt; a[1023][1]</span><br><span class="line">----note: 此时，a[1023][1]和a[1023][0]在同一cache line中，但此时已经被替换出去。miss</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，由于他们都被分在了第0组，所以从始至终，一直都在因为冲突而被替换，然后一直都在不停的miss。完全没有发挥出cache应有的效果</p>
+<h3 id="1025矩阵在L1-cache的表现"><a href="#1025矩阵在L1-cache的表现" class="headerlink" title="1025矩阵在L1 cache的表现"></a>1025矩阵在L1 cache的表现</h3><p>当我们视角转向$1025 * 1025$矩阵时，计算公式类似：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(i, j) = ((1025 * i + j) * 4 ) &gt;&gt; 6 % 64</span><br><span class="line">                  切换成byte    `&gt;&gt;6移除掉块内索引` %64取出后6位，即在哪个set  </span><br></pre></td></tr></table></figure>
+
+<p>所以可以有：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">set(0,0) = 0</span><br><span class="line">set(1,0) = 0</span><br><span class="line">set(2,0) = 0</span><br><span class="line">······</span><br><span class="line">set(15,0) = 0</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set(15,0) = 1</span><br><span class="line">······</span><br><span class="line">set(31,0) = 1</span><br></pre></td></tr></table></figure>
+
+<p>看起来没有像1024一样，全都分在了同一个组里。但实际上我们再演算一下。替换的规则就按照LRU，最近最远未使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">转置第一行</span><br><span class="line">a[0][1] &lt;-&gt; a[1][0]</span><br><span class="line">a[0][2] &lt;-&gt; a[2][0]</span><br><span class="line">a[0][3] &lt;-&gt; a[3][0]</span><br><span class="line">········</span><br><span class="line">a[0][15] &lt;-&gt; a[15][0]</span><br><span class="line">a[0][1024] &lt;-&gt; a[1024][0]</span><br><span class="line">转置完第一行后，此时，第0组的cache，被塞满了a[5][0] - a[15][0] + a[1024][0]所在的cache line</span><br><span class="line"></span><br><span class="line">转置第二行</span><br><span class="line">a[1][2] &lt;-&gt; a[2][1]</span><br><span class="line">----note: 此时，a[2][1]和a[2][0]在同一cache line中，但此时已经被替换出去。miss。把a[2][1]所在cache line读进来。按照LRU，把a[5][0]替换出去。</span><br><span class="line">a[1][3] &lt;-&gt; a[3][1]</span><br><span class="line">----note: 此时，a[3][1]和a[3][0]在同一cache line中，但此时已经被替换出去。miss。把a[3][1]所在cache line读进来。按照LRU，把a[6][0]替换出去。</span><br><span class="line">a[1][4] &lt;-&gt; a[4][1]</span><br><span class="line">········</span><br><span class="line">----note: 此时，a[1012][0]和a[1023][0]所在的cache line，又被替换出去了。</span><br><span class="line"></span><br><span class="line">a[1][5] &lt;-&gt; a[5][1]</span><br><span class="line">a[1][6] &lt;-&gt; a[6][1]</span><br><span class="line">----note: 此时，a[6][1]和a[6][0]在同一cache line中，但此时已经被替换出去。miss</span><br></pre></td></tr></table></figure>
+
+<p>对于组1，组2，都是一样的效果。然后你会发现，虽然1025的冲突没有那么严重，但是依旧没有发挥出cache的效果</p>
+<p>所以，从L1 cache上分析，1024 和 1025方阵的转置，理论上是一样的表现，性能不应该有什么差异。</p>
+<h3 id="1024矩阵在L2-cache的表现"><a href="#1024矩阵在L2-cache的表现" class="headerlink" title="1024矩阵在L2 cache的表现"></a>1024矩阵在L2 cache的表现</h3><p>当视角来到L2 cache。会打开全新的世界。性能差异的根本，就在这里了。</p>
+<p>对于$1024 * 1024$，有计算公式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(i, j) = ((1024 * i + j) * 4 ) &gt;&gt; 6 % 2048</span><br><span class="line">                  切换成byte    `&gt;&gt;6移除掉块内索引` %2048取出后11位，即在哪个set  </span><br></pre></td></tr></table></figure>
+<p>所以有</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">set(0,0) = 0</span><br><span class="line">set(1,0) = 64</span><br><span class="line">set(2,0) = 128</span><br><span class="line">······</span><br><span class="line">set(31,0) = 1984</span><br><span class="line">......</span><br><span class="line">set(32,0) = 0</span><br><span class="line">......</span><br><span class="line">set(64,0) = 0</span><br><span class="line">......</span><br><span class="line">set(96,0) = 0</span><br><span class="line">......</span><br><span class="line">set(128,0) = 0</span><br></pre></td></tr></table></figure>
+<p>每间隔32行，分到同一个set</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">转置第一行</span><br><span class="line">a[0][0] &lt;-&gt; a[0][0]</span><br><span class="line">a[0][32] &lt;-&gt; a[32][0]</span><br><span class="line">a[0][64] &lt;-&gt; a[64][0]</span><br><span class="line">········</span><br><span class="line">a[0][15] &lt;-&gt; a[15][0]</span><br><span class="line">a[0][1024] &lt;-&gt; a[1024][0]</span><br><span class="line">转置完第一行后，此时，第0组的cache，被塞满了a[512][0]、a[544][0]、··· a[1024][0]所在的cache line</span><br><span class="line"></span><br><span class="line">转置第二行</span><br><span class="line">a[1][32] &lt;-&gt; a[32][1]</span><br><span class="line">----note: 此时，a[32][1]和a[32][0]在同一cache line中，但此时已经被替换出去。miss。把a[32][1]所在cache line读进来。按照LRU，把a[512][0]替换出去。</span><br><span class="line">a[1][64] &lt;-&gt; a[64][1]</span><br><span class="line">----note: 此时，a[64][1]和a[64][0]在同一cache line中，但此时已经被替换出去。miss。把a[64][1]所在cache line读进来。按照LRU，把a[544][0]替换出去。</span><br><span class="line">a[1][4] &lt;-&gt; a[4][1]</span><br><span class="line">········</span><br><span class="line">----note: 此时，a[960][0]和a[992][0]所在的cache line，又被替换出去了。</span><br><span class="line"></span><br><span class="line">a[1][960] &lt;-&gt; a[960][1]</span><br><span class="line">a[1][992] &lt;-&gt; a[992][1]</span><br><span class="line">----note: 此时，a[992][1]和a[992][0]在同一cache line中，但此时已经被替换出去。miss</span><br></pre></td></tr></table></figure>
+
+<p>所以类似前面的分析。1024方阵，在L2 cache上的表现还是酣畅淋漓的cache miss</p>
+<h3 id="1024矩阵在L2-cache的表现-1"><a href="#1024矩阵在L2-cache的表现-1" class="headerlink" title="1024矩阵在L2 cache的表现"></a>1024矩阵在L2 cache的表现</h3><p>对于1025 * 1025，有计算公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(i, j) = ((1025 * i + j) * 4 ) &gt;&gt; 6 % 2048</span><br><span class="line">                  切换成byte    `&gt;&gt;6移除掉块内索引` %64取出后11位，即在哪个set  </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">set(0,0) = 0</span><br><span class="line">set(1,0) = 64</span><br><span class="line">set(2,0) = 128</span><br><span class="line">······</span><br><span class="line">set(31,0) = 1984</span><br><span class="line">......</span><br><span class="line">set(32,0) = 2</span><br><span class="line">......</span><br><span class="line">set(64,0) = 4</span><br><span class="line">......</span><br><span class="line">set(96,0) = 6</span><br><span class="line">......</span><br><span class="line">set(128,0) = 8</span><br></pre></td></tr></table></figure>
+
+<p>你可以惊讶的发现，他们惊奇的并没有落在相同的set里。注意是完全没有！更不用说，我们还是16路组相连了。它转置完第一行之后，把每一个组的一路给填满了。没有任何的冲突和替换。</p>
+<p>那么当转置到a[2][1]的时候，就会发现，惊奇的出现在了cache里。直接美美就用上了。miss率极低。</p>
+<p>如果不信的话，可以自己计算验证下。</p>
+<h3 id="valgrind验证猜想"><a href="#valgrind验证猜想" class="headerlink" title="valgrind验证猜想"></a>valgrind验证猜想</h3><p>这里我之所以采用valgrind, 而不是perf。就两个原因：</p>
+<ul>
+<li>wsl中，perf的安装需要从源码<a target="_blank" rel="noopener" href="https://gist.github.com/abel0b/b1881e41b9e1c4b16d84e5e083c38a13">github</a><br>编译，但费劲编译后，还不具备硬件级采样的功能，比较困难完成cache miss率的统计</li>
+<li>valgrind通过模拟cpu，结果绝对的可信</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://www.cs.cmu.edu/afs/cs.cmu.edu/project/cmt-40/Nice/RuleRefinement/bin/valgrind-3.2.0/docs/html/cg-manual.html">valgrind用法</a></p>
+<p>使用命令如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">valgrind --tool=cachegrind --cache-sim=yes\                                                                </span><br><span class="line">--I1=49152,12,64 --D1=49152,12,64 \</span><br><span class="line">--L2=2097152,16,64 \</span><br><span class="line">./build/test 1024</span><br></pre></td></tr></table></figure>
+<p>需要手动的指定要模拟的cache大小。因为valgrind默认就模拟L1 L2 cache两级。如果不指定cache的具体参数的话，会默认用cpu的L3 cache的信息充当valgrind的L2 cache。所以我们手动执行一下，确保模拟准确。</p>
+<p>运行过程中，可能会出现<code>warning: L3 cache found, using its data for the LL simulation.</code>。无需在意，从生成的cachegrid.output.{pid}文件中，可以看到，模拟的cache大小是完全正确的。</p>
+<p>用<code>cg_annotate cachegrind.out.&#123;pid&#125;</code>命令，可以提供详细的报告。</p>
+<p>1024的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-- Summary</span><br><span class="line">--------------------------------------------------------------------------------</span><br><span class="line">Ir_____________________ I1mr__________ ILmr__________ Dr_____________________ D1mr________________ DLmr________________ Dw_____________________ D1mw_______________ DLmw_______________ </span><br><span class="line"></span><br><span class="line">60,360,368,883 (100.0%) 2,179 (100.0%) 2,154 (100.0%) 29,392,845,652 (100.0%) 557,286,887 (100.0%) 426,788,456 (100.0%) 17,318,944,648 (100.0%) 65,547,186 (100.0%) 65,546,459 (100.0%)  PROGRAM TOTALS</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>1025的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-- Summary</span><br><span class="line">--------------------------------------------------------------------------------</span><br><span class="line">Ir_____________________ I1mr__________ ILmr__________ Dr_____________________ D1mr________________ DLmr_______________ Dw_____________________ D1mw_______________ DLmw_______________ </span><br><span class="line"></span><br><span class="line">60,478,248,883 (100.0%) 2,179 (100.0%) 2,154 (100.0%) 29,450,248,652 (100.0%) 551,998,373 (100.0%) 57,590,963 (100.0%) 17,352,769,648 (100.0%) 65,675,186 (100.0%) 65,666,476 (100.0%)  PROGRAM TOTALS</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>只摘出有用信息：<br>1024</p>
+<ul>
+<li>Data read: 29,392,845,652次</li>
+<li>L1 Data miss: 557,286,887次</li>
+<li>L2 Data miss: 426,788,456次</li>
+</ul>
+<p>1025</p>
+<ul>
+<li>Data read: 29,450,248,652次</li>
+<li>L1 Data miss: 551,998,373 次</li>
+<li>L2 Data miss: 57,590,963次</li>
+</ul>
+<p>明显看到，二者的L1 cache miss率几乎一致。但是1025的L2 cache miss率远远小于1024。完全符合我们刚刚的分析。</p>
+<p>ok，费了一番力气。终于从底层原理上把该现象的原因深层次的思考清楚了。如果看官老爷觉得有帮助的话，不如follow我一下吧（侧边栏左下角）。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>License</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">Older</div><a href="/2025/07/13/vscode1/">VSCode is all you need</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Xci77</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8E%B0%E8%B1%A1"><span class="toc-text">现象</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-text">代码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%86%E6%9E%90"><span class="toc-text">分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8Bcache%E4%BF%A1%E6%81%AF"><span class="toc-text">查看cache信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">基础知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%88%86%E6%9E%90"><span class="toc-text">具体分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1024%E7%9F%A9%E9%98%B5%E5%9C%A8L1-cache%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="toc-text">1024矩阵在L1 cache的表现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1025%E7%9F%A9%E9%98%B5%E5%9C%A8L1-cache%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="toc-text">1025矩阵在L1 cache的表现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1024%E7%9F%A9%E9%98%B5%E5%9C%A8L2-cache%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="toc-text">1024矩阵在L2 cache的表现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1024%E7%9F%A9%E9%98%B5%E5%9C%A8L2-cache%E7%9A%84%E8%A1%A8%E7%8E%B0-1"><span class="toc-text">1024矩阵在L2 cache的表现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#valgrind%E9%AA%8C%E8%AF%81%E7%8C%9C%E6%83%B3"><span class="toc-text">valgrind验证猜想</span></a></li></ol></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>Scroll to Top</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `Just`,
+      min: `minutes ago`,
+      hour: `hours ago`,
+      day: `days ago`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `Switched to Light Mode`,
+      dark: `Switched to Dark Mode`,
+      auto: `Switched to Auto Mode`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
