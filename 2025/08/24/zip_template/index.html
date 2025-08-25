@@ -1,0 +1,638 @@
+
+<!DOCTYPE html><html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>C++ STL+Template实现类似Python的Zip函数 - EurekaFlash</title>
+
+  
+    <meta name="description" content="作为一名cpp选手，但对模板一直是知之甚少。前不久，发现用cpp实现类似python的zip函数，虽然简单，但背后却用到了STL和Template的知识，非常考验基本功。所以特意记录一下。 前提知识点std::applystd::apply是针对tuple类型的操作，它可以把一个可调用对象应用在tuple上，使得可以对tuple的所有元素做一个操作。 这段话其实不太好解释，可以看一个示例 1234">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ STL+Template实现类似Python的Zip函数">
+<meta property="og:url" content="http://example.com/2025/08/24/zip_template/index.html">
+<meta property="og:site_name" content="EurekaFlash">
+<meta property="og:description" content="作为一名cpp选手，但对模板一直是知之甚少。前不久，发现用cpp实现类似python的zip函数，虽然简单，但背后却用到了STL和Template的知识，非常考验基本功。所以特意记录一下。 前提知识点std::applystd::apply是针对tuple类型的操作，它可以把一个可调用对象应用在tuple上，使得可以对tuple的所有元素做一个操作。 这段话其实不太好解释，可以看一个示例 1234">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/zip_template/zip_container.png">
+<meta property="article:published_time" content="2025-08-24T11:59:58.611Z">
+<meta property="article:modified_time" content="2025-08-25T17:02:29.617Z">
+<meta property="article:author" content="Xci77">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/zip_template/zip_container.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/images/icon.jpg">
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/icon.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">EurekaFlash</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="Search"></form><div id="search-result"></div><div class="search-no-result">No Results!</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">Recent Update</span></div><div class="widget-body fs14"><a class="item title" href="/2025/08/24/zip_template/"><span class="title">C++ STL+Template实现类似Python的Zip函数</span></a><a class="item title" href="/2025/08/10/functor/"><span class="title">C++仿函数的广泛应用</span></a><a class="item title" href="/2025/08/09/python_package/"><span class="title">开发一个python库的规范</span></a><a class="item title" href="/2025/07/22/matrix/"><span class="title">1024方阵转置与底层cache原理</span></a><a class="item title" href="/2025/07/13/vscode1/"><span class="title">VSCode is all you need</span></a><a class="item title" href="/2025/05/18/fiber0/"><span class="title">协程0</span></a><a class="item title" href="/2025/03/21/bash/"><span class="title">Linux命令行学习</span></a><a class="item title" href="/2025/04/23/memory_leak/"><span class="title">内存泄漏</span></a><a class="item title" href="/2025/04/12/sort/"><span class="title">十大排序</span></a><a class="item title" href="/2025/03/11/python/"><span class="title">python高级用法</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/EurekaFlash" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/github.svg"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">Home</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">Blog</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">Posted on: <time datetime="2025-08-24T11:59:58.611Z">2025-08-24</time></span><span class="sep updated"></span><span class="text updated">Updated on: <time datetime="2025-08-25T17:02:29.617Z">2025-08-26</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>C++ STL+Template实现类似Python的Zip函数</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>作为一名cpp选手，但对模板一直是知之甚少。前不久，发现用cpp实现类似python的zip函数，虽然简单，但背后却用到了STL和Template的知识，非常考验基本功。所以特意记录一下。</p>
+<h2 id="前提知识点"><a href="#前提知识点" class="headerlink" title="前提知识点"></a>前提知识点</h2><h3 id="std-apply"><a href="#std-apply" class="headerlink" title="std::apply"></a>std::apply</h3><p>std::apply是针对tuple类型的操作，它可以把一个可调用对象应用在tuple上，使得可以对tuple的所有元素做一个操作。</p>
+<p>这段话其实不太好解释，可以看一个示例</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tuple&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;utility&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::tuple&lt;<span class="type">int</span>, <span class="type">int</span>&gt; t = &#123;<span class="number">3</span>, <span class="number">4</span>&#125;;</span><br><span class="line">    <span class="type">int</span> result = std::<span class="built_in">apply</span>(add, t);</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Result: &quot;</span> &lt;&lt; result &lt;&lt; std::endl; <span class="comment">// 输出：Result: 7</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上面所示，tuple有两个元素，那给它传了的可调用对象，也得是两个参数，否则就会报错。</p>
+<h3 id="…相关的可变参数模板"><a href="#…相关的可变参数模板" class="headerlink" title="…相关的可变参数模板"></a>…相关的可变参数模板</h3><h4 id="模板参数包"><a href="#模板参数包" class="headerlink" title="模板参数包"></a>模板参数包</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Types&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyClass</span> &#123;&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="函数参数包"><a href="#函数参数包" class="headerlink" title="函数参数包"></a>函数参数包</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 函数模板中的参数包</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">myFunction</span><span class="params">(Args... args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 函数体</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="模板参数展开"><a href="#模板参数展开" class="headerlink" title="模板参数展开"></a>模板参数展开</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Types&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TupleWrapper</span> &#123;</span><br><span class="line">    std::tuple&lt;Types...&gt; data; <span class="comment">// 展开为 std::tuple&lt;T1, T2, T3, ...&gt;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="函数参数展开"><a href="#函数参数展开" class="headerlink" title="函数参数展开"></a>函数参数展开</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">callFunction</span><span class="params">(Args... args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 展开参数包作为函数参数</span></span><br><span class="line">    <span class="built_in">someFunction</span>(args...);</span><br><span class="line">    <span class="comment">// 与下面的等效</span></span><br><span class="line">    <span class="built_in">someFunction</span>((args)...);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 带模式的展开</span></span><br><span class="line">    <span class="built_in">someOtherFunction</span>((args + <span class="number">1</span>)...); <span class="comment">// 对每个参数执行 +1 操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里就两个主要的区别记一下：</p>
+<ul>
+<li>参数声明的时候，<code>typename... Args</code>  <code>Args... args</code> …在前</li>
+<li>展开的时候， <code>Types...</code> <code>args...</code>…在后</li>
+</ul>
+<h3 id="容器迭代器"><a href="#容器迭代器" class="headerlink" title="容器迭代器"></a>容器迭代器</h3><p>我们搞了一个自定义的容器后，为了给它加上迭代功能，需要实现它的迭代器。一个能正常使用的迭代器，必须要有下面的内容：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 必需的类型定义</span></span><br><span class="line"><span class="keyword">using</span> iterator_category = std::forward_iterator_tag; <span class="comment">// 或其他类别</span></span><br><span class="line"><span class="keyword">using</span> value_type = T; <span class="comment">// 元素类型</span></span><br><span class="line"><span class="keyword">using</span> difference_type = std::<span class="type">ptrdiff_t</span>; <span class="comment">// 迭代器距离类型</span></span><br><span class="line"><span class="keyword">using</span> pointer = T*; <span class="comment">// 指针类型</span></span><br><span class="line"><span class="keyword">using</span> reference = T&amp;; <span class="comment">// 引用类型</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h2><p>首先很明显，Zip是把多个容器，压缩成了一个新的容器。这个容器的每个元素，都是tuple，tuple中的每个元素都是原容器中的元素。<br>那么已知，要构造一个新的容器，且要这个容器支持迭代操作，我们需要给这个容器加上迭代器。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/zip_template/zip_container.png" alt="cookie字样"></p>
+<p>首先就是需要定义压缩容器，和它的迭代器。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 压缩容器的迭代器</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Iterator&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ZipIterator</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 为了实现zip的方式，首先肯定需要一个承接压缩好的结果的容器</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Containers&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ZipContainer</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 模板接收各种各样的容器，比如vector，list，set之类</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Containers&gt;</span><br><span class="line"><span class="function">ZipContainer&lt;Containers...&gt; <span class="title">make_zip</span><span class="params">(Containers... containers)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">ZipContainer</span>&lt;Containers...&gt;(containers...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>然后可以实现压缩容器里的细节，它接受若干个容器。<br>为了让它支持迭代，需要实现begin()和end()函数，返回的是自定义的迭代器类型</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Containers&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ZipContainer</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">ZipContainer</span>(Containers&amp;... containers) : <span class="built_in">containers_</span>(containers...) &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="title">begin</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">apply</span>(</span><br><span class="line">            [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="built_in">ZipIterator</span>(std::<span class="built_in">begin</span>(args)...);</span><br><span class="line">            &#125;,</span><br><span class="line">            containers_);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="title">end</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">apply</span>(</span><br><span class="line">            [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">                <span class="keyword">return</span> ZipIterator&#123;std::<span class="built_in">end</span>(args)...&#125;;</span><br><span class="line">            &#125;,</span><br><span class="line">            containers_);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::tuple&lt;Containers&amp;...&gt; containers_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>容器的containers存放容器的引用，然后压缩容器每次迭代，也就是压缩容器的每个值，都是原容器相同index的迭代器的tuple。<br>基于此，很明显可以给出压缩容器的头迭代器和尾迭代器。</p>
+<p>注意用到的只是就是模板参数展开和std::apply</p>
+<p>更进一步的，可以开始实现自定义的迭代器了。</p>
+<p>首先先是把迭代器必须的类型声明写好。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 必需的类型定义</span></span><br><span class="line"><span class="keyword">using</span> value_type = std::tuple&lt;<span class="keyword">typename</span> std::iterator_traits&lt;Iterator&gt;::value_type...&gt;;  <span class="comment">// 元素类型</span></span><br><span class="line"><span class="keyword">using</span> reference = std::tuple&lt;<span class="keyword">typename</span> std::iterator_traits&lt;Iterator&gt;::reference...&gt;;    <span class="comment">// 引用类型</span></span><br><span class="line"><span class="keyword">using</span> iterator_category = std::forward_iterator_tag;                                    <span class="comment">// 前向迭代器</span></span><br><span class="line"><span class="keyword">using</span> difference_type = std::<span class="type">ptrdiff_t</span>;                                                 <span class="comment">// 迭代器距离类型</span></span><br><span class="line"><span class="keyword">using</span> pointer = <span class="type">void</span>;  <span class="comment">// 指针类型，表明不支持iter-&gt;操作。</span></span><br></pre></td></tr></table></figure>
+
+<p>这里有个知识点就是<code>typename std::iterator_traits&lt;Iterator&gt;::value_type</code>，这个是类型萃取，就是Itertor这个迭代器如果指向的是int，比如vector<int>的迭代器进行萃取，那value_type就是int，referenc就是int&amp;。</p>
+<p>再加上参数展开，就可以得出迭代器指向的类型了，比如std::tuple&lt;int, double&gt;</p>
+<p>迭代器的初始化及重要的运算符重载</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ZipIterator</span>(Iterator... args) : <span class="built_in">iterators_</span>(args...) &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回值得是个引用</span></span><br><span class="line">ZipIterator&amp; <span class="keyword">operator</span>++() &#123;</span><br><span class="line">    std::<span class="built_in">apply</span>(</span><br><span class="line">        [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">            <span class="comment">// 一元右折叠，必须这么写  ,是操作符</span></span><br><span class="line">            ((++args), ...);</span><br><span class="line">        &#125;,</span><br><span class="line">        iterators_);</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 后增就不是一个引用</span></span><br><span class="line">ZipIterator <span class="keyword">operator</span>++(<span class="type">int</span>) &#123;</span><br><span class="line">    <span class="keyword">auto</span> temp = *<span class="keyword">this</span>;</span><br><span class="line">    ++(*<span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">return</span> temp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解引用操作，返回的是前面定义的reference类型, 即一个tuple里，里面全是int&amp;这样的类型</span></span><br><span class="line"><span class="comment">// 因为args都是迭代器，解引用的话，就是给翻译成int&amp;这样的类型，需要是*args</span></span><br><span class="line">reference <span class="keyword">operator</span>*() &#123;</span><br><span class="line">    <span class="keyword">return</span> std::<span class="built_in">apply</span>(</span><br><span class="line">        [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">            <span class="keyword">return</span> reference&#123;*args...&#125;;</span><br><span class="line">        &#125;,</span><br><span class="line">        iterators_);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们声明的是一个前向的迭代器，那就需要重载好前置++和后置++，主要还是用了模板展开，迭代的时候，把底层的每个迭代器都往前+1，就可以了。然后注意后置++返回的是不变的值。</p>
+<p>然后*解引用的时候，其实就是在构造一个reference的对象，就是比如std::tuple&lt;int, double&gt;。 然后我用的是{}初始化，禁止了窄化的可能。</p>
+<p>最后的一个操作是，判断是不是到末尾了，也就是不能继续迭代了。判断条件就是，是不是被压缩的某个容器，已经到达了末尾。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 是否等于，判断是否到底. 重载比较运算符，必须是一个const</span></span><br><span class="line"><span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> ZipIterator&lt;Iterator...&gt;&amp; other) <span class="type">const</span> &#123;</span><br><span class="line">    <span class="type">bool</span> result = <span class="literal">false</span>;</span><br><span class="line">    std::<span class="built_in">apply</span>(</span><br><span class="line">        [&amp;](<span class="type">const</span> <span class="keyword">auto</span>&amp;... self_iters) &#123;</span><br><span class="line">            std::<span class="built_in">apply</span>(</span><br><span class="line">                [&amp;](<span class="type">const</span> <span class="keyword">auto</span>&amp;... other_iters) &#123;</span><br><span class="line">                    result = (... || (self_iters == other_iters));</span><br><span class="line">                &#125;,</span><br><span class="line">                other.iterators_);</span><br><span class="line">        &#125;,</span><br><span class="line">        iterators_);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">bool</span> <span class="keyword">operator</span>!=(<span class="type">const</span> ZipIterator&lt;Iterator...&gt;&amp; other) <span class="type">const</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> !(*<span class="keyword">this</span> == other);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这里用了两层的apply来处理参数展开。第一层用来展开本身的tuple，第二层用来展开传入的tuple，最内容用折叠表达式计算结果。</p>
+<p>对于，可以想象成伪代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="built_in">apply</span>(</span><br><span class="line">    [&amp;](<span class="type">const</span> <span class="keyword">auto</span>&amp; self_iter0, <span class="type">const</span> <span class="keyword">auto</span>&amp; self_iter1) &#123;</span><br><span class="line">        std::<span class="built_in">apply</span>(</span><br><span class="line">            [&amp;](<span class="type">const</span> <span class="keyword">auto</span>&amp; other_iter0, <span class="type">const</span> <span class="keyword">auto</span>&amp; other_iter1) &#123;</span><br><span class="line">                result = (self_iters0 == other_iters0) || (self_iters1 == other_iters1)</span><br><span class="line">            &#125;,</span><br><span class="line">            other.iterators_);</span><br><span class="line">    &#125;,</span><br><span class="line">    iterators_);</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="整体代码"><a href="#整体代码" class="headerlink" title="整体代码"></a>整体代码</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iterator&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;list&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tuple&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;type_traits&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 压缩容器的迭代器</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Iterator&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ZipIterator</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 必需的类型定义</span></span><br><span class="line">    <span class="keyword">using</span> value_type = std::tuple&lt;<span class="keyword">typename</span> std::iterator_traits&lt;Iterator&gt;::value_type...&gt;;  <span class="comment">// 元素类型</span></span><br><span class="line">    <span class="keyword">using</span> reference = std::tuple&lt;<span class="keyword">typename</span> std::iterator_traits&lt;Iterator&gt;::reference...&gt;;    <span class="comment">// 引用类型</span></span><br><span class="line">    <span class="keyword">using</span> iterator_category = std::forward_iterator_tag;                                    <span class="comment">// 前向迭代器</span></span><br><span class="line">    <span class="keyword">using</span> difference_type = std::<span class="type">ptrdiff_t</span>;                                                 <span class="comment">// 迭代器距离类型</span></span><br><span class="line">    <span class="keyword">using</span> pointer = <span class="type">void</span>;  <span class="comment">// 指针类型，表明不支持iter-&gt;操作。</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">ZipIterator</span>(Iterator... args) : <span class="built_in">iterators_</span>(args...) &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回值得是个引用</span></span><br><span class="line">    ZipIterator&amp; <span class="keyword">operator</span>++() &#123;</span><br><span class="line">        std::<span class="built_in">apply</span>(</span><br><span class="line">            [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">                <span class="comment">// 一元右折叠，必须这么写  ,是操作符</span></span><br><span class="line">                ((++args), ...);</span><br><span class="line">            &#125;,</span><br><span class="line">            iterators_);</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 后增就不是一个引用</span></span><br><span class="line">    ZipIterator <span class="keyword">operator</span>++(<span class="type">int</span>) &#123;</span><br><span class="line">        <span class="keyword">auto</span> temp = *<span class="keyword">this</span>;</span><br><span class="line">        ++(*<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">return</span> temp;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解引用操作，返回的是前面定义的reference类型, 即一个tuple里，里面全是int&amp;这样的类型</span></span><br><span class="line">    <span class="comment">// 因为args都是迭代器，解引用的话，就是给翻译成int&amp;这样的类型，需要是*args</span></span><br><span class="line">    reference <span class="keyword">operator</span>*() &#123;</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">apply</span>(</span><br><span class="line">            [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">                <span class="keyword">return</span> reference&#123;*args...&#125;;</span><br><span class="line">            &#125;,</span><br><span class="line">            iterators_);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 是否等于，判断是否到底. 重载比较运算符，必须是一个const</span></span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> ZipIterator&lt;Iterator...&gt;&amp; other) <span class="type">const</span> &#123;</span><br><span class="line">        <span class="type">bool</span> result = <span class="literal">false</span>;</span><br><span class="line">        std::<span class="built_in">apply</span>(</span><br><span class="line">            [&amp;](<span class="type">const</span> <span class="keyword">auto</span>&amp;... self_iters) &#123;</span><br><span class="line">                std::<span class="built_in">apply</span>(</span><br><span class="line">                    [&amp;](<span class="type">const</span> <span class="keyword">auto</span>&amp;... other_iters) &#123;</span><br><span class="line">                        result = (... || (self_iters == other_iters));</span><br><span class="line">                    &#125;,</span><br><span class="line">                    other.iterators_);</span><br><span class="line">            &#125;,</span><br><span class="line">            iterators_);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>!=(<span class="type">const</span> ZipIterator&lt;Iterator...&gt;&amp; other) <span class="type">const</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> !(*<span class="keyword">this</span> == other);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::tuple&lt;Iterator...&gt; iterators_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 为了实现zip的方式，首先肯定需要一个承接压缩好的结果的容器</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Containers&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ZipContainer</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">ZipContainer</span>(Containers&amp;... containers) : <span class="built_in">containers_</span>(containers...) &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="title">begin</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">apply</span>(</span><br><span class="line">            [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="built_in">ZipIterator</span>(std::<span class="built_in">begin</span>(args)...);</span><br><span class="line">            &#125;,</span><br><span class="line">            containers_);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="title">end</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">apply</span>(</span><br><span class="line">            [](<span class="keyword">auto</span>&amp;... args) &#123;</span><br><span class="line">                <span class="keyword">return</span> ZipIterator&#123;std::<span class="built_in">end</span>(args)...&#125;;</span><br><span class="line">            &#125;,</span><br><span class="line">            containers_);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::tuple&lt;Containers&amp;...&gt; containers_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 模板接收各种各样的容器，比如vector，list，set之类</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Containers&gt;</span><br><span class="line"><span class="function">ZipContainer&lt;Containers...&gt; <span class="title">make_zip</span><span class="params">(Containers&amp;... containers)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">ZipContainer</span>&lt;Containers...&gt;(containers...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::vector&lt;<span class="type">int</span>&gt; numbers = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">    std::list&lt;std::string&gt; words = &#123;<span class="string">&quot;one&quot;</span>, <span class="string">&quot;two&quot;</span>, <span class="string">&quot;three&quot;</span>&#125;;</span><br><span class="line">    std::vector&lt;<span class="type">double</span>&gt; values = &#123;<span class="number">1.1</span>, <span class="number">2.2</span>, <span class="number">3.3</span>, <span class="number">4.4</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用范围for循环遍历zip</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> [num, word, val] : <span class="built_in">make_zip</span>(numbers, words, values)) &#123;</span><br><span class="line">        std::cout &lt;&lt; num &lt;&lt; <span class="string">&quot;: &quot;</span> &lt;&lt; word &lt;&lt; <span class="string">&quot; -&gt; &quot;</span> &lt;&lt; val &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>其实这篇博客并没有讲的很细，坑你看完还是一知半解。如果要掌握的话，最好还是自己敲一遍代码，仔细思考。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>License</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">Older</div><a href="/2025/08/10/functor/">C++仿函数的广泛应用</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Xci77</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">On This Page</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E6%8F%90%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-text">前提知识点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#std-apply"><span class="toc-text">std::apply</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%80%A6%E7%9B%B8%E5%85%B3%E7%9A%84%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0%E6%A8%A1%E6%9D%BF"><span class="toc-text">…相关的可变参数模板</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E5%8F%82%E6%95%B0%E5%8C%85"><span class="toc-text">模板参数包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E5%8C%85"><span class="toc-text">函数参数包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E5%8F%82%E6%95%B0%E5%B1%95%E5%BC%80"><span class="toc-text">模板参数展开</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E5%B1%95%E5%BC%80"><span class="toc-text">函数参数展开</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="toc-text">容器迭代器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="toc-text">实现思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E4%BB%A3%E7%A0%81"><span class="toc-text">整体代码</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>Scroll to Top</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `Just`,
+      min: `minutes ago`,
+      hour: `hours ago`,
+      day: `days ago`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `Switched to Light Mode`,
+      dark: `Switched to Dark Mode`,
+      auto: `Switched to Auto Mode`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
